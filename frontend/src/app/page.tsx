@@ -1,65 +1,59 @@
-import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
+import { ScannerLine } from "@/components/ui/ScannerLine";
+import { KanjiBackground } from "@/components/ui/KanjiBackground";
+import { DataBlock } from "@/components/ui/DataBlock";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { HueScoreBadge } from "@/components/ui/HueScoreBadge";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+export default async function Home() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Authenticated users go straight to their dashboard
+    if (user) {
+        const { data: profile } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+        const { redirect } = await import("next/navigation");
+        redirect(profile?.role === "landlord" ? "/dashboard/landlord" : "/dashboard/tenant");
+    }
+    return (
+        <main className="min-h-screen bg-void bg-grid-texture relative overflow-hidden flex flex-col items-center justify-center p-8">
+            <KanjiBackground char="色" />
+
+            <div className="w-full absolute top-0 left-0">
+                <ScannerLine />
+            </div>
+
+            <div className="z-10 flex flex-col items-center gap-16 max-w-4xl w-full">
+                {/* Hue Score Centerpiece */}
+                <div className="animate-fade-up">
+                    <HueScoreBadge score={847} tier="gold" label="Gold Tier" />
+                </div>
+
+                {/* HUD Data Row */}
+                <div
+                    className="flex flex-wrap items-center justify-center gap-12 bg-surface-0/80 backdrop-blur-md p-6 border border-border-subtle rounded-sm shadow-xl animate-fade-up"
+                    style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
+                >
+                    <DataBlock label="Subject ID" value="092-B48" />
+                    <DataBlock label="Crime Coefficient" value="84.7" status="success" />
+                    <DataBlock label="Network Node" value="LAG-01" />
+
+                    <div className="flex items-center gap-8 border-l border-border-subtle pl-8">
+                        <div className="flex items-center gap-3">
+                            <span className="font-body text-[12px] uppercase tracking-wider text-text-muted font-semibold">Verified</span>
+                            <VerifiedBadge isVerified={true} />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="font-body text-[12px] uppercase tracking-wider text-text-muted font-semibold">Escrow</span>
+                            <VerifiedBadge isVerified={false} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    );
 }
