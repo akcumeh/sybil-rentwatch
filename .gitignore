@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+*/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -32,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+*/.env*
 
 # vercel
 .vercel
@@ -40,7 +42,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# hardhat generated artifacts
+contracts/artifacts/
+contracts/cache/
+
 .claude/
 */.claude/
 .antigravity
 */.antigravity/
+assets/interswitch-api-excerpts.md
+/assets/updates
+*.zip

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RENTWATCH | The Omniscient Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique&amp;family=Syne:wght@400;700&amp;family=JetBrains+Mono:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #070B14;
+            color: #dfe2f0;
+            font-family: 'Syne', sans-serif;
+            overflow-x: hidden;
+        }
+        .font-serif { font-family: 'Zen Antique', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-sans { font-family: 'Syne', sans-serif; }
+        
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .dot-grid {
+            background-image: radial-gradient(#849490 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.05;
+        }
+
+        .kanji-bg {
+            position: absolute;
+            font-family: 'Zen Antique', serif;
+            font-size: 25rem;
+            color: #00E5CC;
+            opacity: 0.03;
+            line-height: 1;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .scanner-line {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, #00E5CC, transparent);
+            position: absolute;
+            top: 50%;
+            left: 0;
+            opacity: 0.3;
+        }
+        
+        .clip-path-tier {
+            clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "tertiary-fixed-dim": "#ffb3ad",
+                "primary-fixed-dim": "#00dfc6",
+                "error-container": "#93000a",
+                "on-background": "#dfe2f0",
+                "on-surface-variant": "#b9cac5",
+                "on-error": "#690005",
+                "surface-container-lowest": "#0a0e17",
+                "secondary": "#bdc2ff",
+                "surface-dim": "#0f131d",
+                "tertiary-fixed": "#ffdad7",
+                "on-surface": "#dfe2f0",
+                "on-primary": "#003730",
+                "outline": "#849490",
+                "on-secondary": "#131e8c",
+                "surface-tint": "#00dfc6",
+                "inverse-primary": "#006b5e",
+                "on-error-container": "#ffdad6",
+                "surface-container-highest": "#31353f",
+                "secondary-container": "#2f3aa3",
+                "primary-container": "#00e5cc",
+                "primary": "#71ffe8",
+                "surface-variant": "#31353f",
+                "secondary-fixed-dim": "#bdc2ff",
+                "primary-fixed": "#41fce2",
+                "surface-container-high": "#262a34",
+                "surface": "#0f131d",
+                "error": "#ffb4ab",
+                "on-primary-container": "#006256",
+                "on-secondary-fixed-variant": "#2f3aa3",
+                "inverse-surface": "#dfe2f0",
+                "secondary-fixed": "#e0e0ff",
+                "outline-variant": "#3b4a46",
+                "surface-container-low": "#171c25",
+                "on-tertiary-container": "#ae0e1d",
+                "on-secondary-fixed": "#000767",
+                "tertiary-container": "#ffbcb7",
+                "surface-container": "#1b2029",
+                "on-primary-fixed": "#00201b",
+                "inverse-on-surface": "#2c303b",
+                "on-secondary-container": "#a8afff",
+                "on-tertiary-fixed": "#410004",
+                "on-primary-fixed-variant": "#005047",
+                "on-tertiary": "#68000a",
+                "tertiary": "#ffe2df",
+                "surface-bright": "#353944",
+                "background": "#0f131d",
+                "on-tertiary-fixed-variant": "#930013"
+              },
+              fontFamily: {
+                "headline": ["Zen Antique"],
+                "body": ["Syne"],
+                "label": ["JetBrains Mono"]
+              },
+              borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "0px"},
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface-container-lowest selection:bg-primary-container selection:text-on-primary-container">
+<div class="crt-overlay"></div>
+<div class="dot-grid fixed inset-0 z-0"></div>
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full border-b border-[#00E5CC]/15 bg-[#070B14]/85 backdrop-blur-xl z-50 flex justify-between items-center px-8 py-4 shadow-[0_0_20px_rgba(0,229,204,0.08)]">
+<div class="text-2xl font-bold tracking-tighter text-[#00E5CC] font-serif">RENTWATCH</div>
+<div class="hidden md:flex items-center gap-12">
+<a class="text-[#00E5CC] border-b-2 border-[#00E5CC] font-mono tracking-widest text-xs" href="#">MISSION</a>
+<a class="text-[#94A3B8] font-mono tracking-widest text-xs hover:text-[#00E5CC] transition-colors" href="#">PROTOCOL</a>
+<a class="text-[#94A3B8] font-mono tracking-widest text-xs hover:text-[#00E5CC] transition-colors" href="#">ACCESS</a>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex gap-4 text-[#00E5CC] opacity-70">
+<span class="material-symbols-outlined text-lg">account_tree</span>
+<span class="material-symbols-outlined text-lg">security</span>
+</div>
+<button class="bg-[#00E5CC] text-[#003730] px-6 py-2 font-mono text-xs font-bold tracking-widest hover:bg-[#00E5CC]/90 transition-all active:scale-95">
+                INITIALIZE SCANNER
+            </button>
+</div>
+</nav>
+<main class="relative z-10 pt-24">
+<!-- Hero Section -->
+<section class="min-h-[870px] flex flex-col justify-center px-8 md:px-16 relative overflow-hidden">
+<div class="kanji-bg top-20 right-10">信</div>
+<div class="scanner-line"></div>
+<div class="max-w-5xl">
+<div class="font-mono text-primary text-xs tracking-[0.4em] mb-6 opacity-80 uppercase">SYSTEM_STATE: MONITORING</div>
+<h1 class="font-serif text-6xl md:text-8xl leading-tight text-on-background mb-8">
+                    The Omniscient <br/>
+<span class="text-primary italic">Ledger.</span>
+</h1>
+<p class="font-sans text-xl md:text-2xl text-on-surface-variant max-w-2xl leading-relaxed mb-12">
+                    A two-sided, objective ledger that follows you across every transaction. The Lagos real estate market, decoded.
+                </p>
+<div class="flex flex-wrap gap-8 font-mono text-sm border-l border-primary/30 pl-8">
+<div>
+<span class="text-primary block mb-1">VERIFIED_NODES</span>
+<span class="text-on-surface">12,842</span>
+</div>
+<div>
+<span class="text-primary block mb-1">ESCROW_LIQUIDITY</span>
+<span class="text-on-surface">₦4.2B</span>
+</div>
+<div>
+<span class="text-primary block mb-1">MARKET_LATENCY</span>
+<span class="text-on-surface">0.02ms</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Two-Sided CTA -->
+<section class="px-8 md:px-16 py-24 grid md:grid-cols-2 gap-px bg-outline-variant/20">
+<!-- Tenant Side -->
+<div class="group relative bg-surface-container p-12 hover:bg-surface-container-high transition-all duration-500 overflow-hidden">
+<div class="absolute top-0 right-0 p-4 font-mono text-[10px] text-primary opacity-30">ROLE: 0x01_RESIDENT</div>
+<h2 class="font-serif text-4xl mb-6">Enter as Tenant</h2>
+<p class="font-sans text-on-surface-variant mb-10 max-w-sm">Secure your deposit in our sovereign escrow and build your permanent trust record. Your history is your capital.</p>
+<ul class="font-mono text-xs space-y-4 mb-12 text-on-surface-variant/80">
+<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-primary"></span> SECURE YOUR DEPOSIT</li>
+<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-primary"></span> BUILD YOUR HUE SCORE</li>
+<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-primary"></span> DISPUTE RESOLUTION PROTOCOL</li>
+</ul>
+<button class="w-full border border-primary text-primary py-4 font-mono text-xs tracking-widest hover:bg-primary/10 transition-all">AUTHENTICATE IDENTITY</button>
+<div class="absolute -bottom-20 -right-20 opacity-5 group-hover:opacity-10 transition-opacity">
+<img class="w-80 h-80 grayscale" data-alt="abstract architectural geometry of a modern Lagos apartment complex at night with glowing teal highlights and high contrast shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8avaRENujjedrEpmgGACmHWcKPhxNrW-zlFBxlNWV_Jn2ZHfIyMgcGIVizbzJP1s26zp36YDY5D5GabLtx3gZOKQx9f-I0GlBFuiPJ8hIQOfpBEDwHcFs2vUybSuqhbr_9vVEAuFTbMhZICKQqxfiCeVxR3_AUSjec_7M1wMqtlTxr-n7oq0_dmRxGzTIMjFo1E_9z34jj5qnMHuJ4Jy-C_m9wfxAEBsjpYZ4WfxVXk_8JB16SDaheMzAlKAPTmPa6IlM2hi6s_Y"/>
+</div>
+</div>
+<!-- Landlord Side -->
+<div class="group relative bg-surface-container p-12 hover:bg-surface-container-high transition-all duration-500 overflow-hidden">
+<div class="absolute top-0 right-0 p-4 font-mono text-[10px] text-secondary opacity-30">ROLE: 0x02_OPERATOR</div>
+<h2 class="font-serif text-4xl mb-6 text-secondary">Enter as Landlord</h2>
+<p class="font-sans text-on-surface-variant mb-10 max-w-sm">Deploy your assets into the ledger and monitor resident integrity with real-time biometric and financial telemetry.</p>
+<ul class="font-mono text-xs space-y-4 mb-12 text-on-surface-variant/80">
+<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-secondary"></span> DEPLOY ASSETS</li>
+<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-secondary"></span> MONITOR INTEGRITY</li>
+<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-secondary"></span> AUTOMATED LEDGERING</li>
+</ul>
+<button class="w-full border border-secondary text-secondary py-4 font-mono text-xs tracking-widest hover:bg-secondary/10 transition-all">INITIALIZE DEPLOYMENT</button>
+<div class="absolute -bottom-20 -right-20 opacity-5 group-hover:opacity-10 transition-opacity">
+<img class="w-80 h-80 grayscale invert" data-alt="close-up detail of high-tech server racks with glowing blue fiber optics and clinical laboratory aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlRopNQN3nCTPPe3NaCRV9d5kCLI9jpkLBREqJn2a396yOCNKtYSFOO-pATyB1NCe8NWDfLRfJJZ0SuIDvwFRW-0fVu7kRJsDJJceRZW9LfGvBC8uLdzCH-Y06zp0OCV10NCU_b0NuFqqc67OnSVcHQKJL3mBtfRqwPjOyH8mVptV4OOIhKbUs5r8NkwZYkTbRaQEBxYR7fGC9ccMEpww_0NcabDGSZuBjFaBPE_zQlFK1MSUtaxm-P_G2ZlRqt1YuTN9T1XEcBaI"/>
+</div>
+</div>
+</section>
+<!-- Hue Score Reveal -->
+<section class="px-8 md:px-16 py-32 relative">
+<div class="kanji-bg bottom-0 left-10">色</div>
+<div class="text-center mb-24">
+<span class="font-mono text-xs text-primary tracking-[0.5em] uppercase mb-4 block">The Sibyl Metric</span>
+<h2 class="font-serif text-5xl md:text-6xl mb-6">Your Trust is a Color</h2>
+<p class="font-sans text-on-surface-variant max-w-xl mx-auto">The platform quantifies integrity through the Hue Score. A living spectrum that dictates your access to the Lagos ecosystem.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<!-- Platinum -->
+<div class="bg-surface-container-low border border-[#818CF8]/20 p-8 clip-path-tier relative group">
+<div class="absolute inset-0 bg-[#818CF8]/5 blur-2xl group-hover:bg-[#818CF8]/10 transition-all"></div>
+<div class="relative z-10">
+<span class="font-mono text-[10px] text-[#818CF8] mb-8 block">LEVEL_01</span>
+<div class="w-12 h-12 bg-[#818CF8]/20 border border-[#818CF8] mb-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#818CF8]">verified_user</span>
+</div>
+<h3 class="font-serif text-2xl mb-4 text-[#818CF8]">Platinum Indigo</h3>
+<p class="font-mono text-[11px] leading-relaxed text-on-surface/70">Institutional grade. Zero latency transactions. Maximum trust threshold.</p>
+</div>
+</div>
+<!-- Gold -->
+<div class="bg-surface-container-low border border-[#F59E0B]/20 p-8 clip-path-tier relative group">
+<div class="absolute inset-0 bg-[#F59E0B]/5 blur-2xl group-hover:bg-[#F59E0B]/10 transition-all"></div>
+<div class="relative z-10">
+<span class="font-mono text-[10px] text-[#F59E0B] mb-8 block">LEVEL_02</span>
+<div class="w-12 h-12 bg-[#F59E0B]/20 border border-[#F59E0B] mb-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#F59E0B]">star</span>
+</div>
+<h3 class="font-serif text-2xl mb-4 text-[#F59E0B]">Gold Amber</h3>
+<p class="font-mono text-[11px] leading-relaxed text-on-surface/70">Premium status. Verified behavioral history. Priority access.</p>
+</div>
+</div>
+<!-- Slate -->
+<div class="bg-surface-container-low border border-[#94A3B8]/20 p-8 clip-path-tier relative group">
+<div class="absolute inset-0 bg-[#94A3B8]/5 blur-2xl group-hover:bg-[#94A3B8]/10 transition-all"></div>
+<div class="relative z-10">
+<span class="font-mono text-[10px] text-[#94A3B8] mb-8 block">LEVEL_03</span>
+<div class="w-12 h-12 bg-[#94A3B8]/20 border border-[#94A3B8] mb-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#94A3B8]">check_circle</span>
+</div>
+<h3 class="font-serif text-2xl mb-4 text-[#94A3B8]">Silver Slate</h3>
+<p class="font-mono text-[11px] leading-relaxed text-on-surface/70">Standard verified. Base entry requirements met. Active monitoring.</p>
+</div>
+</div>
+<!-- Red -->
+<div class="bg-surface-container-low border border-[#EF4444]/20 p-8 clip-path-tier relative group">
+<div class="absolute inset-0 bg-[#EF4444]/5 blur-2xl group-hover:bg-[#EF4444]/10 transition-all"></div>
+<div class="relative z-10">
+<span class="font-mono text-[10px] text-[#EF4444] mb-8 block">LEVEL_04</span>
+<div class="w-12 h-12 bg-[#EF4444]/20 border border-[#EF4444] mb-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#EF4444]">report_problem</span>
+</div>
+<h3 class="font-serif text-2xl mb-4 text-[#EF4444]">System Red</h3>
+<p class="font-mono text-[11px] leading-relaxed text-on-surface/70">Critical violation. Access restricted. Remediation protocol required.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- The Protocol -->
+<section class="px-8 md:px-16 py-32 bg-surface-container-lowest">
+<div class="flex flex-col md:flex-row gap-20">
+<div class="md:w-1/3">
+<h2 class="font-serif text-5xl mb-8">The Protocol</h2>
+<p class="font-sans text-on-surface-variant mb-12">Four pillars that sustain the integrity of the Omniscient Ledger. No deviations. No exceptions.</p>
+<div class="p-8 bg-primary/5 border-l-2 border-primary">
+<div class="font-mono text-[10px] text-primary mb-2">SYSTEM_LOG_STATUS</div>
+<div class="font-mono text-xs text-on-surface/80">All pillars active. Decentralized verification nodes syncing at 99.9% uptime across Lagos Island and Mainland sectors.</div>
+</div>
+</div>
+<div class="md:w-2/3 grid grid-cols-1 gap-12">
+<div class="flex gap-10 items-start group">
+<span class="font-mono text-primary text-xl">001</span>
+<div>
+<h4 class="font-serif text-3xl mb-4 group-hover:text-primary transition-colors">Identity Verification</h4>
+<p class="font-sans text-on-surface-variant max-w-lg">Biometric anchoring that links your physical identity to your ledger history. Your digital self cannot be forged.</p>
+</div>
+</div>
+<div class="flex gap-10 items-start group">
+<span class="font-mono text-primary text-xl">002</span>
+<div>
+<h4 class="font-serif text-3xl mb-4 group-hover:text-primary transition-colors">Escrow Liquidity</h4>
+<p class="font-sans text-on-surface-variant max-w-lg">Smart contracts hold rental deposits in a zero-trust environment. Funds are released only upon cryptographic consensus.</p>
+</div>
+</div>
+<div class="flex gap-10 items-start group">
+<span class="font-mono text-primary text-xl">003</span>
+<div>
+<h4 class="font-serif text-3xl mb-4 group-hover:text-primary transition-colors">Maintenance Ledger</h4>
+<p class="font-sans text-on-surface-variant max-w-lg">Every repair, every ticket, every physical alteration is timestamped and recorded. The property's history is indelible.</p>
+</div>
+</div>
+<div class="flex gap-10 items-start group">
+<span class="font-mono text-primary text-xl">004</span>
+<div>
+<h4 class="font-serif text-3xl mb-4 group-hover:text-primary transition-colors">Behavioral Verdicts</h4>
+<p class="font-sans text-on-surface-variant max-w-lg">Analytical scoring of community interactions. Your Hue evolves with every payment, every report, and every renewal.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final Call to Action -->
+<section class="py-40 px-8 text-center relative overflow-hidden">
+<div class="absolute inset-0 z-0 flex items-center justify-center opacity-5 pointer-events-none">
+<span class="font-serif text-[40rem]">評</span>
+</div>
+<div class="relative z-10">
+<h2 class="font-serif text-6xl md:text-8xl mb-12">Submit to the Ledger</h2>
+<div class="flex flex-col md:flex-row gap-6 justify-center">
+<button class="bg-[#00E5CC] text-[#003730] px-12 py-6 font-mono font-bold tracking-[0.2em] text-sm hover:brightness-110 transition-all">INITIALIZE SCANNER</button>
+<button class="border border-white/20 text-white px-12 py-6 font-mono font-bold tracking-[0.2em] text-sm hover:bg-white/5 transition-all">VIEW LIVE TELEMETRY</button>
+</div>
+<div class="mt-16 font-mono text-[10px] text-primary/50 tracking-[0.3em]">ENCRYPTION_LAYER_6_ESTABLISHED</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#070B14] w-full border-t border-[#00E5CC]/5 py-12 flex flex-col md:flex-row justify-between items-center px-12 gap-6 relative z-10">
+<div class="text-[#00E5CC] opacity-50 font-serif text-xl font-bold tracking-tighter">RENTWATCH</div>
+<div class="flex gap-8 text-[#94A3B8] font-mono text-[10px] tracking-[0.2em] uppercase">
+<a class="hover:text-white transition-colors" href="#">LEGAL_LEDGER</a>
+<a class="hover:text-white transition-colors" href="#">DECENTRALIZED_TRUST</a>
+<a class="hover:text-white transition-colors" href="#">ENCRYPTION_PROTOCOL</a>
+</div>
+<div class="font-mono text-[10px] tracking-[0.2em] uppercase text-[#94A3B8] opacity-50">
+            © 2024 RENTWATCH. ALL RIGHTS RESERVED. [SYSTEM_ID: 0x07B]
+        </div>
+</footer>
+</body></html>
