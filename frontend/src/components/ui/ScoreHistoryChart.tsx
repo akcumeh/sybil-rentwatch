@@ -17,7 +17,6 @@ export function ScoreHistoryChart() {
       <div className="flex-1 w-full relative -ml-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            {/* Tier Thresholds */}
             <ReferenceLine y={900} stroke="#818CF8" strokeOpacity={0.4} strokeDasharray="4 4" />
             <ReferenceLine y={750} stroke="#F59E0B" strokeOpacity={0.4} strokeDasharray="4 4" />
             <ReferenceLine y={600} stroke="#94A3B8" strokeOpacity={0.4} strokeDasharray="4 4" />

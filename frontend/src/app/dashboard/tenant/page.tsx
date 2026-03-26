@@ -4,7 +4,8 @@ import { ScoreHeroBlock } from '@/components/ui/ScoreHeroBlock'
 import { SectionScoreCard } from '@/components/ui/SectionScoreCard'
 import { TierProgressBar } from '@/components/ui/TierProgressBar'
 import { ImprovementHintCard } from '@/components/ui/ImprovementHintCard'
-import { ScoreHistoryChart } from '@/components/ui/ScoreHistoryChart'
+import dynamic from 'next/dynamic'
+const ScoreHistoryChart = dynamic(() => import('@/components/ui/ScoreHistoryChart').then(m => m.ScoreHistoryChart), { ssr: false })
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { DataBlock } from '@/components/ui/DataBlock'
 
