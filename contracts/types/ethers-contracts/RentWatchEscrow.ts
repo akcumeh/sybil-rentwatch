@@ -6,52 +6,26 @@ import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, Typed
   
 
   export interface RentWatchEscrowInterface extends Interface {
-    getFunction(nameOrSignature: "getRecord" | "lock" | "records" | "refund" | "release"): FunctionFragment;
+    getFunction(nameOrSignature: "getRecord" | "lock" | "owner" | "records"): FunctionFragment;
 
-    getEvent(nameOrSignatureOrTopic: "PaymentLocked" | "PaymentRefunded" | "PaymentReleased"): EventFragment;
+    getEvent(nameOrSignatureOrTopic: "PaymentLocked"): EventFragment;
 
     encodeFunctionData(functionFragment: 'getRecord', values: [string]): string;
-encodeFunctionData(functionFragment: 'lock', values: [string, BytesLike]): string;
+encodeFunctionData(functionFragment: 'lock', values: [string, string, BytesLike]): string;
+encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
 encodeFunctionData(functionFragment: 'records', values: [string]): string;
-encodeFunctionData(functionFragment: 'refund', values: [string]): string;
-encodeFunctionData(functionFragment: 'release', values: [string]): string;
 
     decodeFunctionResult(functionFragment: 'getRecord', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'lock', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'records', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'refund', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'release', data: BytesLike): Result;
   }
 
   
     export namespace PaymentLockedEvent {
-      export type InputTuple = [leaseId: string, dataHash: BytesLike, timestamp: BigNumberish];
-      export type OutputTuple = [leaseId: string, dataHash: string, timestamp: bigint];
-      export interface OutputObject {leaseId: string, dataHash: string, timestamp: bigint };
-      export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-      export type Filter = TypedDeferredTopicFilter<Event>
-      export type Log = TypedEventLog<Event>
-      export type LogDescription = TypedLogDescription<Event>
-    }
-
-  
-
-    export namespace PaymentRefundedEvent {
-      export type InputTuple = [leaseId: string, timestamp: BigNumberish];
-      export type OutputTuple = [leaseId: string, timestamp: bigint];
-      export interface OutputObject {leaseId: string, timestamp: bigint };
-      export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-      export type Filter = TypedDeferredTopicFilter<Event>
-      export type Log = TypedEventLog<Event>
-      export type LogDescription = TypedLogDescription<Event>
-    }
-
-  
-
-    export namespace PaymentReleasedEvent {
-      export type InputTuple = [leaseId: string, timestamp: BigNumberish];
-      export type OutputTuple = [leaseId: string, timestamp: bigint];
-      export interface OutputObject {leaseId: string, timestamp: bigint };
+      export type InputTuple = [paymentId: string, leaseId: string, dataHash: BytesLike, timestamp: BigNumberish];
+      export type OutputTuple = [paymentId: string, leaseId: string, dataHash: string, timestamp: bigint];
+      export interface OutputObject {paymentId: string, leaseId: string, dataHash: string, timestamp: bigint };
       export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
       export type Filter = TypedDeferredTopicFilter<Event>
       export type Log = TypedEventLog<Event>
@@ -95,41 +69,33 @@ decodeFunctionResult(functionFragment: 'release', data: BytesLike): Result;
     
     
     getRecord: TypedContractMethod<
-      [leaseId: string, ],
-      [[string, bigint, string, boolean]],
+      [paymentId: string, ],
+      [[string, bigint, string]],
       'view'
     >
     
 
     
     lock: TypedContractMethod<
-      [leaseId: string, dataHash: BytesLike, ],
+      [paymentId: string, leaseId: string, dataHash: BytesLike, ],
       [void],
       'nonpayable'
+    >
+    
+
+    
+    owner: TypedContractMethod<
+      [],
+      [string],
+      'view'
     >
     
 
     
     records: TypedContractMethod<
       [arg0: string, ],
-      [[string, bigint, string, boolean] & {dataHash: string, timestamp: bigint, lockedBy: string, released: boolean }],
+      [[string, bigint, string] & {dataHash: string, timestamp: bigint, lockedBy: string }],
       'view'
-    >
-    
-
-    
-    refund: TypedContractMethod<
-      [leaseId: string, ],
-      [void],
-      'nonpayable'
-    >
-    
-
-    
-    release: TypedContractMethod<
-      [leaseId: string, ],
-      [void],
-      'nonpayable'
     >
     
 
@@ -137,47 +103,32 @@ decodeFunctionResult(functionFragment: 'release', data: BytesLike): Result;
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
 
     getFunction(nameOrSignature: 'getRecord'): TypedContractMethod<
-      [leaseId: string, ],
-      [[string, bigint, string, boolean]],
+      [paymentId: string, ],
+      [[string, bigint, string]],
       'view'
     >;
 getFunction(nameOrSignature: 'lock'): TypedContractMethod<
-      [leaseId: string, dataHash: BytesLike, ],
+      [paymentId: string, leaseId: string, dataHash: BytesLike, ],
       [void],
       'nonpayable'
+    >;
+getFunction(nameOrSignature: 'owner'): TypedContractMethod<
+      [],
+      [string],
+      'view'
     >;
 getFunction(nameOrSignature: 'records'): TypedContractMethod<
       [arg0: string, ],
-      [[string, bigint, string, boolean] & {dataHash: string, timestamp: bigint, lockedBy: string, released: boolean }],
+      [[string, bigint, string] & {dataHash: string, timestamp: bigint, lockedBy: string }],
       'view'
-    >;
-getFunction(nameOrSignature: 'refund'): TypedContractMethod<
-      [leaseId: string, ],
-      [void],
-      'nonpayable'
-    >;
-getFunction(nameOrSignature: 'release'): TypedContractMethod<
-      [leaseId: string, ],
-      [void],
-      'nonpayable'
     >;
 
     getEvent(key: 'PaymentLocked'): TypedContractEvent<PaymentLockedEvent.InputTuple, PaymentLockedEvent.OutputTuple, PaymentLockedEvent.OutputObject>;
-getEvent(key: 'PaymentRefunded'): TypedContractEvent<PaymentRefundedEvent.InputTuple, PaymentRefundedEvent.OutputTuple, PaymentRefundedEvent.OutputObject>;
-getEvent(key: 'PaymentReleased'): TypedContractEvent<PaymentReleasedEvent.InputTuple, PaymentReleasedEvent.OutputTuple, PaymentReleasedEvent.OutputObject>;
 
     filters: {
       
-      'PaymentLocked(string,bytes32,uint256)': TypedContractEvent<PaymentLockedEvent.InputTuple, PaymentLockedEvent.OutputTuple, PaymentLockedEvent.OutputObject>;
+      'PaymentLocked(string,string,bytes32,uint256)': TypedContractEvent<PaymentLockedEvent.InputTuple, PaymentLockedEvent.OutputTuple, PaymentLockedEvent.OutputObject>;
       PaymentLocked: TypedContractEvent<PaymentLockedEvent.InputTuple, PaymentLockedEvent.OutputTuple, PaymentLockedEvent.OutputObject>;
-    
-
-      'PaymentRefunded(string,uint256)': TypedContractEvent<PaymentRefundedEvent.InputTuple, PaymentRefundedEvent.OutputTuple, PaymentRefundedEvent.OutputObject>;
-      PaymentRefunded: TypedContractEvent<PaymentRefundedEvent.InputTuple, PaymentRefundedEvent.OutputTuple, PaymentRefundedEvent.OutputObject>;
-    
-
-      'PaymentReleased(string,uint256)': TypedContractEvent<PaymentReleasedEvent.InputTuple, PaymentReleasedEvent.OutputTuple, PaymentReleasedEvent.OutputObject>;
-      PaymentReleased: TypedContractEvent<PaymentReleasedEvent.InputTuple, PaymentReleasedEvent.OutputTuple, PaymentReleasedEvent.OutputObject>;
     
     };
   }

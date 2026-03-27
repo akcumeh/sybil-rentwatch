@@ -6,37 +6,43 @@ contract RentWatchEscrow {
         bytes32 dataHash;
         uint256 timestamp;
         address lockedBy;
-        bool released;
     }
 
     mapping(string => PaymentRecord) public records;
+    address public owner;
 
-    event PaymentLocked(string leaseId, bytes32 dataHash, uint256 timestamp);
-    event PaymentReleased(string leaseId, uint256 timestamp);
-    event PaymentRefunded(string leaseId, uint256 timestamp);
+    event PaymentLocked(
+        string indexed paymentId,
+        string leaseId,
+        bytes32 dataHash,
+        uint256 timestamp
+    );
 
-    function lock(string calldata leaseId, bytes32 dataHash) external {
-        require(records[leaseId].timestamp == 0, "Already locked");
-        records[leaseId] = PaymentRecord(dataHash, block.timestamp, msg.sender, false);
-        emit PaymentLocked(leaseId, dataHash, block.timestamp);
+    constructor() {
+        owner = msg.sender;
     }
 
-    function release(string calldata leaseId) external {
-        require(records[leaseId].timestamp != 0, "No record found");
-        require(!records[leaseId].released, "Already released");
-        records[leaseId].released = true;
-        emit PaymentReleased(leaseId, block.timestamp);
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not authorized");
+        _;
     }
 
-    function refund(string calldata leaseId) external {
-        require(records[leaseId].timestamp != 0, "No record found");
-        records[leaseId].released = true;
-        emit PaymentRefunded(leaseId, block.timestamp);
+    function lock(
+        string calldata paymentId,
+        string calldata leaseId,
+        bytes32 dataHash
+    ) external onlyOwner {
+        require(records[paymentId].timestamp == 0, "Already recorded");
+        records[paymentId] = PaymentRecord(dataHash, block.timestamp, msg.sender);
+        emit PaymentLocked(paymentId, leaseId, dataHash, block.timestamp);
     }
 
-    function getRecord(string calldata leaseId) external view
-        returns (bytes32, uint256, address, bool) {
-        PaymentRecord memory r = records[leaseId];
-        return (r.dataHash, r.timestamp, r.lockedBy, r.released);
+    function getRecord(string calldata paymentId)
+        external
+        view
+        returns (bytes32, uint256, address)
+    {
+        PaymentRecord memory r = records[paymentId];
+        return (r.dataHash, r.timestamp, r.lockedBy);
     }
 }
