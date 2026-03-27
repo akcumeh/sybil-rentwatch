@@ -32,11 +32,11 @@ module.exports = {
                 warning: '#FBBF24',
                 danger: '#EF4444',
                 tier: {
-                    platinum: '#818CF8',
-                    gold: '#F59E0B',
-                    silver: '#94A3B8',
-                    bronze: '#F97316',
-                    red: '#EF4444'
+                    clear:     '#22C55E',
+                    clouded:   '#EAB308',
+                    disturbed: '#F97316',
+                    criminal:  '#EF4444',
+                    gold:      '#F59E0B',
                 }
             },
             textColor: {

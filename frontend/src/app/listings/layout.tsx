@@ -4,7 +4,7 @@ import { DashboardNav } from '@/components/ui/DashboardNav'
 import { MobileNavDrawer } from '@/components/ui/MobileNavDrawer'
 import { KanjiBackground } from '@/components/ui/KanjiBackground'
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function ListingsLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
@@ -22,7 +22,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="min-h-screen bg-void bg-grid-texture relative flex text-text-primary overflow-x-hidden">
             <KanjiBackground char="色" className="opacity-5 mix-blend-screen text-tier-gold" />
 
-            {/* Sidebar */}
             <aside className="w-72 border-r border-border-subtle bg-surface-0/80 backdrop-blur-xl hidden lg:flex flex-col p-10 sticky top-0 h-screen z-50 shadow-2xl shrink-0">
                 <a
                     href="/"
@@ -33,7 +32,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 <DashboardNav role={role} displayName={displayName} />
             </aside>
 
-            {/* Mobile top bar */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 border-b border-border-subtle bg-surface-0/90 backdrop-blur-xl flex items-center justify-between px-6 shadow-md">
                 <MobileNavDrawer role={role} displayName={displayName} />
                 <a href="/" className="font-display text-lg tracking-widest text-text-primary select-none">

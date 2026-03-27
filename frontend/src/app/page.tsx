@@ -14,7 +14,7 @@ export default async function Home() {
         const { data: profile } = await supabase
             .from("users")
             .select("role")
-            .eq("id", user.id)
+            .eq("supabase_auth_id", user.id)
             .single();
         const { redirect } = await import("next/navigation");
         redirect(profile?.role === "landlord" ? "/dashboard/landlord" : "/dashboard/tenant");
@@ -30,7 +30,7 @@ export default async function Home() {
             <div className="z-10 flex flex-col items-center gap-16 max-w-4xl w-full">
                 {/* Hue Score Centerpiece */}
                 <div className="animate-fade-up">
-                    <HueScoreBadge score={847} tier="gold" label="Gold Tier" />
+                    <HueScoreBadge score={847} tier="clear" label="Clear Hue" />
                 </div>
 
                 {/* HUD Data Row */}
@@ -39,7 +39,6 @@ export default async function Home() {
                     style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
                 >
                     <DataBlock label="Subject ID" value="092-B48" />
-                    <DataBlock label="Crime Coefficient" value="84.7" status="success" />
                     <DataBlock label="Network Node" value="LAG-01" />
 
                     <div className="flex items-center gap-8 border-l border-border-subtle pl-8">

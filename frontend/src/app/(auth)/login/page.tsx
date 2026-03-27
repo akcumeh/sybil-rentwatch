@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { KanjiBackground } from '@/components/ui/KanjiBackground'
@@ -14,6 +14,9 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => { setMounted(true) }, [])
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -43,7 +46,7 @@ export default function LoginPage() {
         const { data: profile } = await supabase
             .from('users')
             .select('role')
-            .eq('id', user!.id)
+            .eq('supabase_auth_id', user!.id)
             .single()
 
         router.push(profile?.role === 'landlord' ? '/dashboard/landlord' : '/dashboard/tenant')
@@ -72,13 +75,21 @@ export default function LoginPage() {
             {/* Right: Form panel */}
             <div className="w-full lg:w-1/2 min-h-screen flex items-center justify-center p-6 lg:p-12 z-10">
                 <div className="bg-surface-1/85 backdrop-blur-[20px] border border-border-subtle p-8 lg:p-12 rounded-sm w-full max-w-lg relative overflow-hidden shadow-2xl">
-                    <ScannerLine className="absolute top-0 left-0" />
+                    <ScannerLine className="absolute top-0 left-0" error={!!error} />
+                    {!mounted && (
+                        <div className="flex flex-col gap-7 mt-4 animate-pulse">
+                            <div className="h-14 w-48 bg-surface-2 rounded-sm" />
+                            <div className="h-12 w-full bg-surface-2 rounded-sm" />
+                            <div className="h-12 w-full bg-surface-2 rounded-sm" />
+                            <div className="h-12 w-full bg-surface-2 rounded-sm" />
+                        </div>
+                    )}
 
                     <motion.div
                         variants={containerVariants}
                         initial="hidden"
                         animate="show"
-                        className="flex flex-col gap-7 mt-4 relative z-10"
+                        className={`flex flex-col gap-7 mt-4 relative z-10 ${!mounted ? 'invisible' : ''}`}
                     >
                         <motion.div variants={itemVariants} className="flex flex-col gap-1">
                             <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-text-muted mb-2">
@@ -122,7 +133,7 @@ export default function LoginPage() {
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                placeholder="••••••••••••"
+                                placeholder="............"
                                 className="bg-surface-0 border border-border-bright text-text-primary font-body rounded-sm px-4 py-3 focus:outline-none focus:border-scanner focus:shadow-[0_0_10px_rgba(0,229,204,0.15)] transition-all placeholder:text-text-muted/50"
                             />
                         </motion.div>
@@ -133,7 +144,7 @@ export default function LoginPage() {
                                 disabled={loading}
                                 className="w-full bg-scanner text-void font-body font-bold text-[13px] uppercase tracking-wider py-4 rounded-sm hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,229,204,0.3)] hover:shadow-[0_0_25px_rgba(0,229,204,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Authenticating...' : 'Enter System →'}
+                                {loading ? 'Authenticating...' : 'Enter System'}
                             </button>
                         </motion.div>
 

@@ -31,6 +31,9 @@ export default function SignupPage() {
     }
 
     async function handleSignup() {
+        if (!fullName.trim()) return setError('Full name is required.')
+        if (!email.trim() || !email.includes('@')) return setError('A valid email address is required.')
+        if (password.length < 8) return setError('Passkey must be at least 8 characters.')
         if (!role) return setError('Please select your system role.')
         setLoading(true)
         setError('')
@@ -142,7 +145,7 @@ export default function SignupPage() {
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                placeholder="••••••••••••"
+                                placeholder="............"
                                 className="bg-surface-0 border border-border-bright text-text-primary font-body rounded-sm px-4 py-3 focus:outline-none focus:border-scanner focus:shadow-[0_0_10px_rgba(0,229,204,0.15)] transition-all placeholder:text-text-muted/50"
                             />
                         </motion.div>
@@ -155,6 +158,7 @@ export default function SignupPage() {
                                 {(['tenant', 'landlord'] as const).map(r => (
                                     <button
                                         key={r}
+                                        type="button"
                                         onClick={() => setRole(r)}
                                         className={`py-6 rounded-sm font-body uppercase tracking-wider font-bold text-sm transition-all duration-300 border ${
                                             role === r
@@ -174,7 +178,7 @@ export default function SignupPage() {
                                 disabled={loading}
                                 className="w-full bg-scanner text-void font-body font-bold text-[13px] uppercase tracking-wider py-4 rounded-sm hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,229,204,0.3)] hover:shadow-[0_0_25px_rgba(0,229,204,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Registering...' : 'Create Identity →'}
+                                {loading ? 'Registering...' : 'Create Identity'}
                             </button>
                         </motion.div>
 

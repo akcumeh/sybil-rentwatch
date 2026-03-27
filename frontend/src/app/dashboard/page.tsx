@@ -9,7 +9,7 @@ export default async function DashboardPage() {
     const { data: profile } = await supabase
         .from('users')
         .select('role')
-        .eq('id', user.id)
+        .eq('supabase_auth_id', user.id)
         .single()
 
     redirect(profile?.role === 'landlord' ? '/dashboard/landlord' : '/dashboard/tenant')
