@@ -1,13 +1,14 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { ScoreHeroBlock } from '@/components/ui/ScoreHeroBlock';
-import { SectionScoreCard } from '@/components/ui/SectionScoreCard';
-import { TierProgressBar } from '@/components/ui/TierProgressBar';
-import { ImprovementHintCard } from '@/components/ui/ImprovementHintCard';
-import { ScoreHistoryChart } from '@/components/ui/ScoreHistoryChart';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { DataBlock } from '@/components/ui/DataBlock';
-import { PaymentModalTrigger } from '@/components/ui/PaymentModalTrigger';
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { ScoreHeroBlock } from '@/components/ui/ScoreHeroBlock'
+import { SectionScoreCard } from '@/components/ui/SectionScoreCard'
+import { TierProgressBar } from '@/components/ui/TierProgressBar'
+import { ImprovementHintCard } from '@/components/ui/ImprovementHintCard'
+import { ScoreHistoryChart } from '@/components/ui/ScoreHistoryChart'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { DataBlock } from '@/components/ui/DataBlock'
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-NG', {

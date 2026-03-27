@@ -1,5 +1,5 @@
-import { ethers } from "ethers";
-import contractABI from "@/contracts/RentWatchEscrow.json";
+import { ethers } from 'ethers';
+import contractABI from '@/contracts/RentWatchEscrow.json';
 
 function getContract() {
     const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);

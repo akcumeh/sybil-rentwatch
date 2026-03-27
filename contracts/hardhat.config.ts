@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { defineConfig, configVariable } from "hardhat/config";
 import HardhatToolbox from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 
