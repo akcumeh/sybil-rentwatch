@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogOut } from 'lucide-react'
 
@@ -19,12 +19,11 @@ const NAV_ITEMS = [
 
 export function DashboardNav({ role, displayName }: DashboardNavProps) {
     const pathname = usePathname()
-    const router = useRouter()
     const supabase = createClient()
 
     async function handleLogout() {
         await supabase.auth.signOut()
-        router.push('/login')
+        window.location.href = '/login'
     }
 
     const dashboardHref = role === 'landlord' ? '/dashboard/landlord' : '/dashboard/tenant'

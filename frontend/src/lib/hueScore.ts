@@ -1,5 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-
 export function getTier(score: number): string {
     if (score >= 750) return 'clear';
     if (score >= 500) return 'clouded';
@@ -7,192 +5,78 @@ export function getTier(score: number): string {
     return 'criminal';
 }
 
-function computePropertyCare(
-    damageDisputes: { outcome: string; status: string }[]
-): number {
-    if (!damageDisputes.length) return 250;
-    const confirmed  = damageDisputes.filter(d => d.outcome === 'confirmed'  && d.status === 'resolved');
-    const tenantWon  = damageDisputes.filter(d => d.outcome === 'tenant_won' && d.status === 'resolved');
-    const unresolved = damageDisputes.filter(d => d.status === 'active');
-    if (unresolved.length)     return 70;
-    if (confirmed.length >= 2) return 70;
-    if (confirmed.length === 1) return 140;
-    if (tenantWon.length)      return 210;
-    return 250;
-}
-
-async function countCleanCompletedLeases(
-    tenantId: string,
-    leases: { id: string; status: string }[],
-    supabase: SupabaseClient
-): Promise<number> {
-    const completed = leases.filter(l => l.status === 'completed');
-    let clean = 0;
-    for (const lease of completed) {
-        const { data: violations } = await supabase
-            .from('disputes')
-            .select('id')
-            .eq('tenant_id', tenantId)
-            .eq('lease_id', lease.id)
-            .eq('type', 'lease_violation')
-            .eq('against', 'tenant')
-            .eq('outcome', 'confirmed');
-        if (!violations || violations.length === 0) clean++;
-    }
-    return clean;
-}
-
-function depositReturnTypeToScore(returnType: string): number {
-    const map: Record<string, number> = {
-        full_within_7_days:              250,
-        full_8_to_14_days:               210,
-        partial_accepted:                180,
-        partial_tenant_disputed_won:      80,
-        not_returned_landlord_won:       130,
-        not_returned_tenant_won_dispute:   0,
-        unresolved:                       60,
-    };
-    return map[returnType] ?? 60;
-}
-
-function computeDepositIntegrity(
-    completedLeases: { deposit_return_type: string }[]
-): number {
-    if (!completedLeases.length) return 250;
-    const avg = completedLeases.reduce(
-        (s, l) => s + depositReturnTypeToScore(l.deposit_return_type),
-        0
-    ) / completedLeases.length;
-    return avg; // already on 0-250 scale
-}
-
-function computePropertyAccuracy(
-    complaints: { outcome: string | null; is_remediated: boolean; score_deduction: number }[]
-): number {
-    let score = 250;
-    for (const c of complaints) {
-        if (!c.outcome || c.outcome === 'not_upheld' || c.outcome === 'dismissed') continue;
-        if (c.outcome === 'confirmed') {
-            score -= 25;
-            if (c.is_remediated) score += 20; // PD1: remediated within 30d
-        }
-    }
-    return Math.max(0, score);
-}
-
 export async function computeTenantScore(
-    tenantId: string,
-    supabase: SupabaseClient
-) {
-    // Section 1: Payment Reliability
+    userId: string,
+    supabase: import('@supabase/supabase-js').SupabaseClient
+): Promise<{ payment_reliability: number; property_care: number; lease_compliance: number; community_rating: number; total: number }> {
     const { data: payments } = await supabase
         .from('payments')
-        .select('grade_points')
-        .eq('tenant_id', tenantId)
-        .not('grade_points', 'is', null);
+        .select('status, grade_points')
+        .eq('tenant_id', userId)
+        .eq('status', 'confirmed');
 
-    const paymentScore = payments?.length
-        ? (payments.reduce((s, p) => s + (p.grade_points ?? 0), 0) / payments.length / 100) * 250
-        : 250;
+    const confirmed = payments ?? [];
+    const avgPoints = confirmed.length > 0
+        ? confirmed.reduce((sum, p) => sum + (p.grade_points ?? 15), 0) / confirmed.length
+        : 15;
 
-    // Section 2: Property Care
-    const { data: damageDisputes } = await supabase
+    const section1 = Math.round(Math.min((avgPoints / 25) * 250, 250));
+
+    const { data: disputes } = await supabase
         .from('disputes')
-        .select('outcome, status')
-        .eq('tenant_id', tenantId)
-        .eq('type', 'property_damage')
-        .eq('against', 'tenant');
+        .select('id')
+        .eq('tenant_id', userId);
 
-    const propertyScore = computePropertyCare(damageDisputes ?? []);
+    const disputeCount = (disputes ?? []).length;
+    const section2 = Math.max(0, 200 - disputeCount * 30);
+    const section3 = confirmed.length > 0 ? 200 : 150;
 
-    // Section 3: Lease Compliance
-    const { data: violations } = await supabase
-        .from('disputes')
-        .select('outcome')
-        .eq('tenant_id', tenantId)
-        .eq('type', 'lease_violation')
-        .eq('against', 'tenant')
-        .eq('outcome', 'confirmed');
-
-    const { data: leases } = await supabase
-        .from('leases')
-        .select('id, status')
-        .eq('tenant_id', tenantId);
-
-    const cleanCompleted = await countCleanCompletedLeases(tenantId, leases ?? [], supabase);
-    const baseCompliance = cleanCompleted >= 2 ? 250 : 200;
-    const confirmedViolations = violations?.length ?? 0;
-    const leaseScore = Math.max(0, baseCompliance - confirmedViolations * 40);
-
-    // Section 4: Behavioral Rating
     const { data: ratings } = await supabase
         .from('ratings')
-        .select('stars')
-        .eq('rated_id', tenantId);
+        .select('overall_score')
+        .eq('rated_user_id', userId);
 
-    const behavioralScore = ratings?.length
-        ? (ratings.reduce((s, r) => s + r.stars, 0) / ratings.length / 5) * 250
-        : 200;
+    const ratingList = ratings ?? [];
+    const section4 = ratingList.length > 0
+        ? Math.round((ratingList.reduce((s, r) => s + r.overall_score, 0) / ratingList.length / 5) * 250)
+        : 0;
 
-    return {
-        payment_reliability: Math.round(paymentScore),
-        property_care:       Math.round(propertyScore),
-        lease_compliance:    Math.round(leaseScore),
-        behavioral_rating:   Math.round(behavioralScore),
-        total: Math.round(paymentScore + propertyScore + leaseScore + behavioralScore),
-    };
+    const total = section1 + section2 + section3 + section4;
+
+    return { payment_reliability: section1, property_care: section2, lease_compliance: section3, community_rating: section4, total };
 }
 
 export async function computeLandlordScore(
-    landlordId: string,
-    supabase: SupabaseClient
-) {
-    // Section 1: Maintenance Responsiveness
-    const { data: requests } = await supabase
-        .from('maintenance_requests')
-        .select('per_request_grade')
-        .eq('landlord_id', landlordId)
-        .not('per_request_grade', 'is', null);
-
-    const maintenanceScore = requests?.length
-        ? (requests.reduce((s, r) => s + (r.per_request_grade ?? 0), 0) / requests.length / 100) * 250
-        : 200;
-
-    // Section 2: Deposit Integrity
-    const { data: completedLeases } = await supabase
-        .from('leases')
-        .select('deposit_return_type')
-        .eq('landlord_id', landlordId)
-        .eq('status', 'completed');
-
-    const depositScore = completedLeases?.length
-        ? computeDepositIntegrity(completedLeases)
-        : 250;
-
-    // Section 3: Property Accuracy
-    const { data: accComplaints } = await supabase
+    userId: string,
+    supabase: import('@supabase/supabase-js').SupabaseClient
+): Promise<{ maintenance_responsiveness: number; deposit_integrity: number; property_accuracy: number; behavioral_rating: number; total: number }> {
+    const { data: disputes } = await supabase
         .from('disputes')
-        .select('outcome, is_remediated, score_deduction')
-        .eq('landlord_id', landlordId)
-        .eq('type', 'property_accuracy');
+        .select('id, status')
+        .eq('landlord_id', userId);
 
-    const accuracyScore = computePropertyAccuracy(accComplaints ?? []);
+    const disputeList = disputes ?? [];
+    const section1 = Math.max(0, 200 - disputeList.filter(d => d.status !== 'resolved').length * 25);
+    const section2 = Math.max(0, 200 - disputeList.filter(d => d.status === 'resolved').length * 10);
 
-    // Section 4: Behavioral Rating
+    const { data: properties } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('landlord_id', userId);
+
+    const section3 = (properties ?? []).length > 0 ? 200 : 150;
+
     const { data: ratings } = await supabase
         .from('ratings')
-        .select('stars')
-        .eq('rated_id', landlordId);
+        .select('overall_score')
+        .eq('rated_user_id', userId);
 
-    const behavioralScore = ratings?.length
-        ? (ratings.reduce((s, r) => s + r.stars, 0) / ratings.length / 5) * 250
-        : 200;
+    const ratingList = ratings ?? [];
+    const section4 = ratingList.length > 0
+        ? Math.round((ratingList.reduce((s, r) => s + r.overall_score, 0) / ratingList.length / 5) * 250)
+        : 0;
 
-    return {
-        maintenance_responsiveness: Math.round(maintenanceScore),
-        deposit_integrity:          Math.round(depositScore),
-        property_accuracy:          Math.round(accuracyScore),
-        behavioral_rating:          Math.round(behavioralScore),
-        total: Math.round(maintenanceScore + depositScore + accuracyScore + behavioralScore),
-    };
+    const total = section1 + section2 + section3 + section4;
+
+    return { maintenance_responsiveness: section1, deposit_integrity: section2, property_accuracy: section3, behavioral_rating: section4, total };
 }

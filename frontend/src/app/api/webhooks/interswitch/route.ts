@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createAdminClient();
-
+    
     const { data: payment, error } = await supabase
         .from('payments')
         .update({
